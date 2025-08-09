@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from 'react';
+import { use, useState } from 'react';
 import { Chat, UIMessage, useChat } from "@ai-sdk/react";
 import { requestDevServer } from "@/lib/server-actions";
 import { FreestyleDevServer } from "freestyle-sandboxes/react/dev-server";
@@ -20,7 +20,30 @@ interface ChatClientProps {
 }
 
 function ChatClient({ repoId }: ChatClientProps) {
-  const { id, setMessages, error } = useChat<MoveMateMessage>();
+  const [input, setInput] = useState('');
+
+  const {
+    messages,
+    sendMessage,
+    status,
+    error,
+    setMessages,
+    regenerate,
+    stop,
+    clearError
+  } = useChat({
+    // optional config
+    experimental_throttle: 300, // ms
+    resume: true,               // resume ongoing stream if reconnecting
+  });
+
+  const handleSend = async () => {
+    if (!input.trim()) return;
+    await sendMessage({
+      text: input,
+    }); // sends the text to the backend
+    setInput('');
+  };
 
   return (
     <div className="flex flex-col gap-2">
@@ -40,20 +63,22 @@ function ChatClient({ repoId }: ChatClientProps) {
             })}
           </div>
         ))}
-        <form onSubmit={handleSubmit}>
+        <div>
           <input
-            className="fixed dark:bg-zinc-900 bottom-0 w-full max-w-md p-2 mb-8 border border-zinc-300 dark:border-zinc-800 rounded shadow-xl"
             value={input}
-            placeholder="Build"
-            onChange={handleInputChange}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Say something..."
           />
-        </form>
-      </div>
+          <button onClick={handleSend} disabled={status === 'streaming'}>
+            Send
+          </button>
+          <button onClick={() => regenerate()}>Regenerate last</button>
+          <button onClick={() => stop()}>Stop</button>
+        </div>
       <div className="col-span-3">
         <FreestyleDevServer actions={{ requestDevServer }} repoId={repoId} />;
       </div>
     </div>
+    </div>
   );
 }
-
-

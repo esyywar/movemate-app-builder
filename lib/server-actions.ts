@@ -7,5 +7,6 @@ const freestyle = new FreestyleSandboxes({
 });
 
 export async function requestDevServer({ repoId }: { repoId: string }) {
+  console.log(`repoId: ${repoId}`)
   return await freestyle.requestDevServer({ repoId });
 }
