@@ -1,6 +1,26 @@
+"use client";
+
 import Image from "next/image";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+import { createChat } from "../lib/create-chat";
+
 export default function Home() {
+  const router = useRouter()
+
+  const [loading, setLoading] = useState(false);
+  async function handleClick() {
+    setLoading(true);
+    try {
+      const { repoId } = await createChat();
+      router.push(`/app/${repoId}`);
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
@@ -51,6 +71,16 @@ export default function Home() {
           </a>
         </div>
       </main>
+      <div className="flex flex-col items-center justify-center h-screen">
+        <h1 className="text-4xl font-bold">AI App Builder</h1>
+        <button
+          className="px-4 py-2 mt-4 text-white bg-blue-500 rounded"
+          onClick={handleClick}
+          disabled={loading}
+        >
+          {loading ? "Creating..." : "Create App"}
+        </button>
+      </div>
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
